@@ -34,12 +34,13 @@ format = 4, digits = "default", api = NULL)
 ## Gráfico Volume e Valor da produção
 
 ```{r echo=TRUE, fig.align='center', fig.height=4, fig.width=8, message=FALSE, warning=FALSE, out.width="1\\linewidth", results='asis', size='small'}
-graf_extr <- ggpubr::ggboxplot(dados_extrativismo, x = "Variável", y = "Valor", color = "green", fill = "black", title = "Volume e Valor da produção", xlab = "Volume(Ton)", ylab = "Valor(R$)")
+graf_extr <- ggpubr::ggboxplot(dados_extrativismo, x = "Variável", y = "Valor", color = "green", fill = "black", title = "Volume da produção", xlab = "Volume(Ton)", ylab = "Valor(R$)")
 ```
 
-```{r}
+```{r, warning=FALSE}
 plot(graf_extr)
 ```
+
 ## Hipótese testável
 
 H~1~: Volume de produção aumenta com aumento da intervenção da política pública\
@@ -50,49 +51,70 @@ H~0~: Volume de proução não aumenta com aumento da intervenção da política
 Interessa saber se o aumento de recursos de intervenção da pólitica nos últimos 5 anos trouxe aumento de produção para o extrativismo vegetal.\
 Para tanto os dados da PEVS/IBGE de produção serão utilizados em confronto com os dados de intervenção da CONAB.
 
-#### dados de produção e intervenção:
+## Dados de produção e intervenção:
 
+#### Diretório local:
 
-Diretório local:
-
-```{r}
+```{r, warning=FALSE}
 getwd()
 ```
 
-Importação dos dados:
+#### Importação dos dados:
 
-```{r}
+```{r, warning=FALSE}
 dados_prod_interv <- readxl::read_excel("dados_prod_interv.xlsx")
 ```
 
-Gráfico dos dados, com a regressão linear:
+#### Gráfico dos dados, com a regressão linear:
 
-```{r}
+```{r warning=FALSE, include=FALSE}
 library("ggplot2")
 library("tidyverse")
 ```
 
-
-```{r}
+```{r, warning=FALSE}
 politica_publica <- ggplot(dados_prod_interv, aes(x = Intervenção, y = Produção)) + 
                         geom_point() +
                         geom_smooth(method = "lm")
 ```
 
-Plotagem do gráfico:
+#### Plotagem do gráfico:
 
-```{r}
+```{r, warning=FALSE}
 plot(politica_publica)
 ```
 
-## Teste:
+## Correlação:
 
-Conforme gráfico acima o ideal é testar a correlação entre as variáveis.  
+Conforme gráfico acima, estabeleceremos a correlação entre as variáveis.\
 Desta forma utilizaremos o pacote corrplot
 
-```{r}
+```{r echo=TRUE, warning=FALSE}
 dados_prod_interv %>% select_if(is.numeric) %>% cor() %>%
 corrplot::corrplot(.,method="number",type="upper",diag=FALSE )
+```
+
+Assim fica claro que com o passar dos anos tanto a produção quanto a intervenção aumentam, mas a correlação entre a intervenção e a produção pode ser considerada baixa. Uma das explicações pode ser a pequeno espaço de tempo, pois a intervenção tem apenas 11 anos de implementação.
+
+## Teste 
+
+Apesar de não ser muito útil no caso desses dados que tenho em específico fazer um teste, decidi rodar um exemplo com objetivo de cumprir com a tarefa, contudo, na argumentação que se faz necessária para este trabalho a correlação faz mais sentido. 
+
+Pacote Infer
+
+```{r echo=TRUE, warning=FALSE}
+library("infer")
+```
+
+```{r echo=TRUE, warning=FALSE}
+pol_pub_teste <- dados_prod_interv %>%
+  specify(response = Intervenção, explanatory = Produção,) %>%
+  generate(reps = 10) %>%
+  calculate("correlation")
+```
+
+```{r echo=TRUE, warning=FALSE}
+pol_pub_teste
 ```
 
 
